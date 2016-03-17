@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html ng-app="Index">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<base href="" />
+	<title>Not A Microservice</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<script src="https://fgnass.github.io/spin.js/spin.min.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-touch.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-sanitize.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
+
+
+	<script>
+		var module = angular.module('Index', ['ngSanitize']);
+
+		module.controller('mainController', function($scope, $http, $timeout) {
+			$scope.page = {
+				show: function() {
+					var result = document.location.href.match(/^.*\/?\?id=([^#]*)#?$/) || [];
+					id = result[1];
+					$scope.data = {id: id, name: 'This is my name', text: 'hello'};
+				}
+			};
+			
+			$scope.page.show();
+		});
+
+	</script>
+</head>
+
+<body bgcolor="#0099ff">
+	<div>
+		This is template 4.  I'll define the HTML template here, filled with runtime replace fields denote by { { variablename } }.  You can see this in the source, but basically it looks like this: <br />
+		$scope.data = {id: 1, name: 'This is my name', text: 'hello'};
+
+		<div ng-controller="mainController">
+		  <h1>This is the id file: {{data.id}}</h1>
+		  <h1>This is the name file: {{data.name}}</h1>
+		  <h1>This is the text file: {{data.text}}</h1>
+		</div>
+
+		Maybe you are now asking yourself if you could just pull this information from anywhere?
+		<a href="./template5.html?id=1">The answer is yes with template 5.</a>
+	</div>
+</body>
+
+<script>
+</script>
+</html>

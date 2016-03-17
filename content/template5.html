@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html ng-app="Index">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<base href="" />
+	<title>Not A Microservice</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<script src="https://fgnass.github.io/spin.js/spin.min.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-touch.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-sanitize.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
+
+
+	<script>
+		var module = angular.module('Index', ['ngSanitize']);
+
+		module.controller('mainController', function($scope, $http, $timeout) {
+			$scope.page = {
+				show: function() {
+					var result = document.location.href.match(/^.*\/?\?id=([^#]*)#?$/) || [];
+					id = result[1];
+					$http.get('https://p7nhi3ckr1.execute-api.us-east-1.amazonaws.com/prod/not-a-microservice?id=' + id).then((response) => {
+						try {
+							$scope.data = response.data.fields;
+						}
+						catch(exception) {
+							alert({response: exception});
+						}
+					},
+					(failure) => {
+						alert({response: failure.data});
+					});
+					
+				}
+			};
+			
+			$scope.page.show();
+		});
+
+	</script>
+</head>
+
+<body bgcolor="#0099ff">
+	<div>
+		This is template 5.  I'll define the HTML template here, filled with runtime replace fields denote by { { variablename } }.  This time when we parse the input url we will take that and send it to a remote server get back a json response and then update the fields below: <br />
+
+		<pre>
+		The code is:
+
+		var module = angular.module('Index', ['ngSanitize']);
+
+		module.controller('mainController', function($scope, $http, $timeout) {
+			$scope.page = {
+				show: function() {
+					var result = document.location.href.match(/^.*\/?\?id=([^#]*)#?$/) || [];
+					id = result[1];
+					$http.get('https://p7nhi3ckr1.execute-api.us-east-1.amazonaws.com/prod/not-a-microservice?id=' + id).then((response) => {
+						try {
+
+						/*  See Lambda Function below for more information */
+							$scope.data = response.data.fields;
+						}
+						catch(exception) {
+							alert({response: exception});
+						}
+					},
+					(failure) => {
+						alert({response: failure.data});
+					});
+					
+				}
+			};
+			
+			$scope.page.show();
+		});
+	</pre>		
+		<div ng-controller="mainController" >
+		  <h3>Item ID: {{data.itemId}}</h3>
+		  <h3>Item description: {{data.text}}</h3>
+		  <h3>Link to actual data document: {{data.link}}</h3>
+		</div>
+
+		What about pulling this data from different sources, well instead of just id=5, it could have been url=https://dataservice/getdata/data?id=10 and then the whole url could have been passed to the $http call.  In this case each url string must return data of the same type, i.e. expect data to all be formatted as the same type of json document.  This way you don't really care about anything.  The client knows the template they want (i.e. template 5, and they know where the data comes from i.e. https://dataservice, they can do all the HARD WORK: <b>https://servicetemplateservice/template/5?url=https://dataservice/getdata/data?id=10</b>.
+
+		<pre>
+		AWS Lambda Function:
+			console.log('Loading function');
+
+			var doc = require('dynamodb-doc');
+			var dynamo = new doc.DynamoDB();
+
+			exports.handler = function(event, context) {
+			    try {
+			        context.done(JSON.stringify({
+			            statusCode:200,
+			            fields: {
+			                itemId: event.params,
+			                text: "this is an order",
+			                link: "https://p7nhi3ckr1.execute-api.us-east-1.amazonaws.com/prod/not-a-microservice?id=" + event.params
+			            }
+			        }));
+			    }
+			    catch (exception) {
+			        context.done(JSON.stringify({
+			            statusCode:200,
+			            fields: {
+			                itemId: "NONE",
+			                text: "You failed to pass a valid ID",
+			                link: "https://p7nhi3ckr1.execute-api.us-east-1.amazonaws.com/prod/not-a-microservice"
+			            }
+			        }));
+			    }
+			};
+
+			API Gateway Request Mapping template: (application/json)
+			{
+				"params": "$input.params('id')",
+				"stage" : "$context.stage",
+				"request_id" : "$context.requestId",
+				"api_id" : "$context.apiId",
+				"resource_path" : "$context.resourcePath",
+				"resource_id" : "$context.resourceId",
+				"http_method" : "$context.httpMethod",
+				"source_ip" : "$context.identity.sourceIp",
+				"user-agent" : "$context.identity.userAgent",
+				"account_id" : "$context.identity.accountId",
+				"api_key" : "$context.identity.apiKey",
+				"caller" : "$context.identity.caller",
+				"user" : "$context.identity.user",
+				"user_arn" : "$context.identity.userArn"
+			}
+
+			API Gatewary Response Mapping template: (application/json)
+				$input.path('$.errorMessage')
+		</pre>
+	</div>
+</body>
+
+<script>
+</script>
+</html>
